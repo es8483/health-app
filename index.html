@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Guide for Beginners</title>
+    <style>
+        :root {
+            --primary-color: #FF9EAA; /* Pastel Pink */
+            --secondary-color: #FFD0D0; /* Lighter Pink */
+            --accent-color: #3AA6B9; /* Soft Teal */
+            --text-color: #4A4A4A;
+            --bg-color: #F9F9F9;
+            --card-bg: #FFFFFF;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--card-bg);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* Search & Filter */
+        .controls {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--secondary-color);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-bar:focus {
+            border-color: var(--primary-color);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--secondary-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .difficulty {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background-color: #EEE;
+        }
+
+        .difficulty.easy { background-color: #E0F7FA; color: #006064; }
+        .difficulty.medium { background-color: #FFF3E0; color: #E65100; }
+        .difficulty.hard { background-color: #FFEBEE; color: #B71C1C; }
+
+        .tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            background-color: var(--secondary-color);
+            color: #555;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            border-radius: var(--radius);
+            padding: 25px;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #AAA;
+        }
+
+        .modal-body h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .step-list {
+            list-style: none;
+            counter-reset: step;
+        }
+
+        .step-list li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+        }
+
+        .step-list li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background-color: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.2rem; }
+            .modal-content { width: 95%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💪 Gym Guide for Women</h1>
+    <p class="subtitle">트레이너 없이도 혼자서 멋지게!</p>
+</header>
+
+<div class="controls">
+    <input type="text" class="search-bar" placeholder="어떤 기구를 찾으세요? (예: 레그프레스, 등 운동...)">
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="lower">하체</button>
+        <button class="filter-btn" data-filter="upper">상체</button>
+        <button class="filter-btn" data-filter="core">복부/코어</button>
+        <button class="filter-btn" data-filter="cardio">유산소</button>
+    </div>
+</div>
+
+<div class="grid-container" id="equipment-grid">
+    <!-- Cards will be injected here by JS -->
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="modal-body" id="modal-body">
+            <!-- Details will be injected here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data derived from gym-guide-system
+    const equipmentData = [
+        {
+            id: 'leg-press',
+            name: '레그프레스 (Leg Press)',
+            category: 'lower',
+            difficulty: 'easy',
+            target: '허벅지 앞쪽, 엉덩이',
+            desc: '앉아서 발로 미는 하체 운동 기구입니다. 허리 부담 없이 강력한 하체 운동이 가능합니다.',
+            steps: [
+                '의자에 엉덩이와 등을 완전히 밀착시켜 앉습니다.',
+                '발판 중앙에 발을 어깨 너비로 둡니다.',
+                '옆 손잡이를 잡고 다리에 힘을 주어 밀어냅니다.',
+                '무릎이 완전히 펴지기 직전까지 밀었다가 천천히 굽히며 돌아옵니다.'
+            ],
+            tips: '무릎을 완전히(락이 걸릴 정도로) 펴지 않도록 주의하세요. 무릎 관절에 무리가 갈 수 있습니다.',
+            weight: '초보자 권장: 20-30kg'
+        },
+        {
+            id: 'lat-pull-down',
+            name: '랫풀다운 (Lat Pull Down)',
+            category: 'upper',
+            difficulty: 'medium',
+            target: '등(광배근), 팔',
+            desc: '위에서 아래로 바를 당겨 등 근육을 발달시키는 기구입니다. 굽은 등 교정에 좋습니다.',
+            steps: [
+                '허벅지 고정 패드를 자신의 다리 높이에 맞게 조절합니다.',
+                '바를 어깨보다 넓게 잡고 자리에 앉아 허벅지를 고정합니다.',
+                '가슴을 위로 펴면서 쇄골 쪽으로 바를 당깁니다.',
+                '천천히 저항을 느끼며 팔을 펴서 제자리로 돌아갑니다.'
+            ],
+            tips: '팔의 힘으로 당기지 말고, 날개뼈를 아래로 내린다는 느낌으로 당겨보세요.',
+            weight: '초보자 권장: 10-15kg'
+        },
+        {
+            id: 'chest-press',
+            name: '체스트프레스 (Chest Press)',
+            category: 'upper',
+            difficulty: 'medium',
+            target: '가슴, 어깨, 팔 뒤쪽',
+            desc: '앉아서 앞으로 미는 동작으로 가슴 탄력을 높여주는 기구입니다. 팔굽혀펴기와 비슷한 효과가 있습니다.',
+            steps: [
+                '손잡이가 가슴 중앙(유두 선) 높이에 오도록 의자 높이를 조절합니다.',
+                '등과 머리를 시트에 붙이고 손잡이를 잡습니다.',
+                '호흡을 내쉬며 앞으로 쭉 밀어줍니다.',
+                '가슴이 늘어나는 느낌을 받으며 천천히 돌아옵니다.'
+            ],
+            tips: '어깨가 으쓱 올라가지 않도록 주의하세요.',
+            weight: '초보자 권장: 5-10kg'
+        },
+        {
+            id: 'leg-curl',
+            name: '레그컬 (Leg Curl)',
+            category: 'lower',
+            difficulty: 'easy',
+            target: '허벅지 뒤쪽(햄스트링)',
+            desc: '누워서 다리를 접는 동작으로 허벅지 뒷라인을 매끈하게 만들어줍니다.',
+            steps: [
+                '기구에 엎드려 발목 패드가 아킬레스건 위에 오도록 위치를 잡습니다.',
+                '손잡이를 잡고 상체를 고정한 상태에서 발뒤꿈치를 엉덩이 쪽으로 당깁니다.',
+                '천천히 저항을 버티며 다리를 폅니다.'
+            ],
+            tips: '엉덩이가 들썩거리지 않도록 상체를 잘 고정해주세요.',
+            weight: '초보자 권장: 10-15kg'
+        },
+        {
+            id: 'hip-abduction',
+            name: '힙어브덕션 (Hip Abduction)',
+            category: 'lower',
+            difficulty: 'easy',
+            target: '엉덩이 옆쪽(중둔근)',
+            desc: '다리를 양옆으로 벌리는 동작으로 골반 라인과 힙업에 효과적입니다.',
+            steps: [
+                '의자에 앉아 다리를 패드 안쪽에 둡니다.',
+                '허리를 펴고 손잡이를 잡은 뒤, 다리를 양쪽으로 벌립니다.',
+                '엉덩이 옆쪽에 자극을 느끼며 1-2초 멈춥니다.',
+                '천천히 모아줍니다.'
+            ],
+            tips: '반동을 이용하지 말고 엉덩이 힘으로 지그시 벌려주세요.',
+            weight: '초보자 권장: 15-20kg'
+        },
+        {
+            id: 'treadmill',
+            name: '트레드밀 (Treadmill)',
+            category: 'cardio',
+            difficulty: 'easy',
+            target: '전신 유산소',
+            desc: '가장 기본적인 유산소 기구로 체지방 연소와 심폐지구력 향상에 좋습니다.',
+            steps: [
+                '벨트 위에 올라서서 START 버튼을 누릅니다.',
+                '속도를 천천히 올리며 걷기 시작합니다.',
+                '시선은 정면을 향하고, 팔은 자연스럽게 앞뒤로 흔듭니다.',
+                '운동이 끝나면 COOL DOWN이나 STOP을 눌러 서서히 멈춥니다.'
+            ],
+            tips: '경사도(Incline)를 올리면 힙업 효과가 더 좋아집니다.',
+            weight: '권장: 속도 5.0~6.0으로 30분 걷기'
+        },
+        {
+            id: 'sit-up',
+            name: '싯업벤치 (Sit-up Bench)',
+            category: 'core',
+            difficulty: 'easy',
+            target: '복부',
+            desc: '복근 강화에 가장 기본이 되는 윗몸일으키기 기구입니다.',
+            steps: [
+                '발을 패드에 걸고 눕습니다.',
+                '손은 머리 뒤나 가슴에 얹고 복부 힘으로 상체를 일으킵니다.',
+                '등을 둥글게 말면서 올라간다고 생각하세요.',
+                '천천히 내려옵니다.'
+            ],
+            tips: '목만 당기면 목이 아플 수 있으니 복부에 집중하세요.',
+            weight: '권장: 15회씩 3세트'
+        }
+    ];
+
+    const grid = document.getElementById('equipment-grid');
+    const searchInput = document.querySelector('.search-bar');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const modal = document.getElementById('modal');
+    const modalBody = document.getElementById('modal-body');
+    const closeBtn = document.querySelector('.close-btn');
+
+    // Render Cards
+    function renderCards(data) {
+        grid.innerHTML = '';
+        if (data.length === 0) {
+            grid.innerHTML = '<div class="empty-state">검색 결과가 없습니다. 🤔</div>';
+            return;
+        }
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => openModal(item);
+
+            let difficultyLabel, difficultyClass;
+            if (item.difficulty === 'easy') { difficultyLabel = '난이도: 하'; difficultyClass = 'easy'; }
+            else if (item.difficulty === 'medium') { difficultyLabel = '난이도: 중'; difficultyClass = 'medium'; }
+            else { difficultyLabel = '난이도: 상'; difficultyClass = 'hard'; }
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="card-title">${item.name}</span>
+                    <span class="difficulty ${difficultyClass}">${difficultyLabel}</span>
+                </div>
+                <div class="tags">
+                    <span class="tag">#${item.target}</span>
+                </div>
+                <p class="description">${item.desc}</p>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Open Modal
+    function openModal(item) {
+        const stepsHtml = item.steps.map(step => `<li>${step}</li>`).join('');
+        
+        modalBody.innerHTML = `
+            <h2>${item.name}</h2>
+            <div class="tags" style="margin-bottom: 15px;">
+                <span class="tag" style="background:${getCategoryColor(item.category)}; color:white;">${getCategoryName(item.category)}</span>
+                <span class="tag">#${item.target}</span>
+            </div>
+            <p>${item.desc}</p>
+
+            <div class="section-title">✅ 권장 무게/횟수</div>
+            <p>${item.weight}</p>
+
+            <div class="section-title">📝 사용 방법</div>
+            <ul class="step-list">
+                ${stepsHtml}
+            </ul>
+
+            <div class="warning-box">
+                <strong>💡 Tip:</strong> ${item.tips}
+            </div>
+        `;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    // Helpers
+    function getCategoryName(cat) {
+        const map = { lower: '하체', upper: '상체', core: '복부', cardio: '유산소' };
+        return map[cat] || '기타';
+    }
+
+    function getCategoryColor(cat) {
+        const map = { lower: '#FF9EAA', upper: '#3AA6B9', core: '#FFD54F', cardio: '#4DB6AC' };
+        return map[cat] || '#888';
+    }
+
+    // Close Modal
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    closeBtn.onclick = closeModal;
+    modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+    };
+
+    // Filter Logic
+    let currentCategory = 'all';
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // UI Toggle
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Logic
+            currentCategory = btn.dataset.filter;
+            filterData();
+        });
+    });
+
+    // Search Logic
+    searchInput.addEventListener('input', () => {
+        filterData();
+    });
+
+    function filterData() {
+        const query = searchInput.value.toLowerCase();
+        
+        const filtered = equipmentData.filter(item => {
+            const matchesCategory = currentCategory === 'all' || item.category === currentCategory;
+            const matchesSearch = item.name.toLowerCase().includes(query) || 
+                                  item.target.toLowerCase().includes(query) ||
+                                  item.desc.toLowerCase().includes(query);
+            return matchesCategory && matchesSearch;
+        });
+
+        renderCards(filtered);
+    }
+
+    // Initial Render
+    renderCards(equipmentData);
+
+</script>
+
+</body>
+</html>
